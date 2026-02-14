@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+
+<title>7 Kebiasaan Anak Indonesia Hebat</title>
+
+    <link rel="icon" type="image/png" href="https://www.freepnglogos.com/uploads/tut-wuri-handayani-png-logo/vector-wuri-handayani-warna-0.png">
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>7 Kebiasaan Anak Indonesia Hebat</title>
+<style>
+        /* UKURAN DISESUAIKAN (50% LEBIH KECIL DARI SEBELUMNYA) */
+        body { 
+            margin: 0; 
+            font-family: 'Segoe UI', Arial, sans-serif; 
+            background-color: #f4f4f4; 
+            font-size: 13px; /* Ukuran standar yang nyaman */
+        }
+
+        .sidebar { 
+            width: 200px; 
+            height: 100vh; 
+            background-color: #c00000; 
+            position: fixed; 
+            top: 0; left: 0; 
+            color: white; 
+            overflow-y: auto; 
+            z-index: 1000;
+        }
+
+        .logo-sekolah { text-align: center; padding: 15px 10px; border-bottom: 1px solid rgba(255,255,255,0.2); }
+        .logo-sekolah img { 
+            width: 80px; height: 80px; 
+            background: white; border-radius: 8px; 
+            object-fit: contain; display: block; margin: 0 auto 10px; 
+        }
+
+        .menu button { 
+            width: 90%; margin: 8px auto; 
+            display: block; padding: 10px; 
+            background-color: white; color: #c00000; 
+            border: none; font-weight: bold; font-size: 13px; 
+            cursor: pointer; border-radius: 5px;
+        }
+
+        .topbar { 
+            height: 55px; background-color: #c00000; 
+            color: white; display: flex; 
+            align-items: center; justify-content: space-between; 
+            padding: 0 15px; position: fixed; 
+            top: 0; left: 200px; right: 0; 
+            z-index: 900; 
+        }
+
+        .content { 
+            margin-left: 200px; margin-top: 55px; 
+            padding: 15px; min-height: calc(100vh - 55px); 
+        }
+
+        .panel { 
+            background-color: #ffffff; border-radius: 10px; 
+            padding: 20px; max-width: 900px; margin: 0 auto; 
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05); 
+        }
+
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; font-size: 13px; font-weight: bold; margin-bottom: 5px; color: #333; }
+        .form-group input, .form-group textarea, .form-group select { 
+            width: 100%; padding: 10px; 
+            border: 1px solid #ccc; border-radius: 6px; 
+            font-size: 13px; box-sizing: border-box; 
+        }
+
+        .btn-simpan { padding: 12px; background-color: #c00000; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 13px; width: 100%; margin-top: 10px; }
+        .btn-excel { padding: 12px; background-color: #28a745; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 13px; width: 100%; margin-top: 10px; }
+        
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 12px; }
+        th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
+        th { background-color: #f8f8f8; color: #c00000; }
+
+        #statusSave { font-size: 12px; color: #78ff78; font-weight: bold; display: none; }
+
+        /* RESPONSIVE HP */
+        @media (max-width: 768px) {
+            .sidebar { width: 100%; height: auto; position: relative; }
+            .topbar { left: 0; position: sticky; top: 0; width: 100%; box-sizing: border-box; }
+            .content { margin-left: 0; margin-top: 5px; }
+        }
+    </style>    
+
+    <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+</head>
+<body>
+
+<div class="sidebar">
+    <div class="logo-sekolah">
+        <img id="logoPreview" src="https://via.placeholder.com/110?text=LOGO" alt="Logo">
+        <input type="file" accept="image/*" onchange="uploadLogo(this)" style="font-size: 12px;">
+    </div>
+    <div class="menu">
+        <button onclick="showPage('sekolah')">Data Sekolah</button>
+        <button onclick="showPage('siswa')">Data Siswa</button>
+        <button onclick="showPage('kaih')">Input Harian KAIH</button>
+        <button onclick="showPage('rekap')">Rekap Bulanan</button>
+        <button onclick="showPage('print')">Cetak Laporan</button>
+        <button onclick="resetAll()" style="background: #333; color: #fff; margin-top: 30px;">RESET SEMUA</button>
+    </div>
+</div>
+
+<div class="topbar">
+    <h2 style="margin:0; font-size: 18px;">7 KEBIASAAN ANAK INDONEISA HEBAT</h2>
+    <div id="statusSave">✅ TERSIMPAN</div>
+</div>
+
+<div class="content" id="content"></div>
+
+<script>
+    let dataSiswa = JSON.parse(localStorage.getItem("dataSiswa")) || [];
+    let dataKaih = JSON.parse(localStorage.getItem("dataKaih")) || [];
+
+    function showPage(page) {
+        const container = document.getElementById("content");
+        
+        if (page === 'sekolah') {
+            container.innerHTML = `
+                <div class="panel">
+                    <h3>KONFIGURASI DATA SEKOLAH</h3>
+                    <div class="form-group"><label>Nama Sekolah</label><input type="text" id="namaSekolah" oninput="simpanDataSekolah()"></div>
+<div class="form-group"><label>Nama Kabupaten</label><input type="text" id="kabupaten" oninput="simpanDataSekolah()"></div>
+                    <div class="form-group"><label>NPSN</label><input type="text" id="npsn" oninput="simpanDataSekolah()">             </div>
+                    <div class="form-group"><label>Alamat Sekolah</label><textarea id="alamat" rows="2" oninput="simpanDataSekolah()"></textarea></div>
+                    <div class="form-group"><label>Nama Kepala Sekolah</label><input type="text" id="kepalaSekolah" oninput="simpanDataSekolah()"></div>
+                    <div class="form-group"><label>NIP Kepala Sekolah</label><input type="text" id="nipKepala" oninput="simpanDataSekolah()"></div>
+                </div>`;
+            loadDataSekolah();
+        } 
+        
+        else if (page === 'siswa') {
+            container.innerHTML = `
+                <div class="panel">
+                    <h3>DATA SISWA</h3>
+                    <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:10px;">
+                        <div class="form-group"><label>Nama</label><input type="text" id="namaSiswa"></div>
+                        <div class="form-group"><label>NISN</label><input type="text" id="nisn"></div>
+                        <div class="form-group"><label>Kelas</label><input type="text" id="kelas"></div>
+                    </div>
+                    <button class="btn-simpan" onclick="simpanSiswa()">TAMBAH MANUAL</button>
+                    <hr style="margin:20px 0;">
+                    <label><b>Import Excel (B=Nama, E=NISN, AQ=Kelas)</b></label><br>
+                    <input type="file" id="inputExcel" accept=".xlsx" style="margin-top:10px;">
+                    <button class="btn-excel" onclick="prosesImportExcel()">IMPORT SEKARANG</button>
+                    <hr>
+                    <div style="max-height: 250px; overflow-y: auto;">
+                        <table id="tabelSiswa">
+                            <thead><tr><th>No</th><th>Nama</th><th>NISN</th><th>Kelas</th><th>Aksi</th></tr></thead>
+                            <tbody id="tabelSiswaBody"></tbody>
+                        </table>
+                    </div>
+                </div>`;
+            tampilkanSiswa();
+        }
+
+        else if (page === 'kaih') {
+            container.innerHTML = `
+                <div class="panel">
+                    <h3>INPUT AKTIVITAS</h3>
+                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px;">
+                        <div class="form-group"><label>Wali Kelas</label><input type="text" id="waliKelas" oninput="autosaveKaih()"></div>
+                        <div class="form-group"><label>NIP Wali</label><input type="text" id="nipWali" oninput="autosaveKaih()"></div>
+                        <div class="form-group"><label>Pilih Kelas</label><select id="kelasKaih" onchange="loadSiswaByKelas()"></select></div>
+                        <div class="form-group"><label>Nama Siswa</label><select id="namaSiswaKaih" onchange="autosaveKaih()"></select></div>
+                        <div class="form-group"><label>Tanggal</label><input type="date" id="tanggal" onchange="autosaveKaih()"></div>
+                        <div class="form-group"><label>Bulan Laporan</label>
+                            <select id="bulan" onchange="autosaveKaih()">
+                                ${["Januari","Februari","Maret","April","Mei","Juni","Juli","Agustus","September","Oktober","November","Desember"].map(b => `<option>${b}</option>`).join('')}
+                            </select>
+                        </div>
+                    </div>
+                    <h4 style="border-bottom: 2px solid #c00000; padding-bottom:5px;">7 Kebiasaan</h4>
+                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+                        <div class="form-group"><label>1. Bangun Pagi</label><input type="time" id="bangunPagi" onchange="autosaveKaih()"></div>
+                        <div class="form-group"><label>2. Beribadah</label><select id="beribadah" onchange="autosaveKaih()"><option>Ya</option><option>Tidak</option></select></div>
+                        <div class="form-group"><label>3. Berolahraga</label><select id="olahraga" onchange="autosaveKaih()"><option>Ya</option><option>Tidak</option></select></div>
+                        <div class="form-group"><label>4. Makan Sehat</label><select id="makanSehat" onchange="autosaveKaih()"><option>Ya</option><option>Tidak</option></select></div>
+                        <div class="form-group"><label>5. Gemar Belajar</label><select id="belajar" onchange="autosaveKaih()"><option>Ya</option><option>Tidak</option></select></div>
+                        <div class="form-group"><label>6. Bermasyarakat</label><select id="masyarakat" onchange="autosaveKaih()"><option>Ya</option><option>Tidak</option></select></div>
+                        <div class="form-group"><label>7. Tidur Cepat</label><input type="time" id="tidurCepat" onchange="autosaveKaih()"></div>
+                    </div>
+                </div>`;
+            loadKelasKaih();
+            document.getElementById('tanggal').valueAsDate = new Date();
+        }
+
+        else if (page === 'rekap') {
+            container.innerHTML = `
+                <div class="panel">
+                    <h3>REKAPITULASI DATA</h3>
+                    <div style="display:flex; gap:10px; margin-bottom:15px;">
+                        <select id="filterBulanRekap" onchange="filterRekap()" style="padding:8px; border-radius:4px;">
+                            <option value="">Pilih Bulan</option>
+                            ${["Januari","Februari","Maret","April","Mei","Juni","Juli","Agustus","September","Oktober","November","Desember"].map(b => `<option>${b}</option>`).join('')}
+                        </select>
+                        <button class="btn-excel" onclick="eksporExcelRekap()">EKSPOR EXCEL</button>
+                    </div>
+                    <div style="overflow-x: auto;">
+                        <table id="tabelRekapFull">
+                            <thead>
+                                <tr><th>Tanggal</th><th>Nama</th><th>Kelas</th><th>1</th><th>2</th><th>3</th><th>4</th><th>5</th><th>6</th><th>7</th><th>Aksi</th></tr>
+                            </thead>
+                            <tbody id="tabelRekapBody"></tbody>
+                        </table>
+                    </div>
+                </div>`;
+            filterRekap();
+        }
+        
+        else if (page === 'print') {
+            container.innerHTML = `
+                <div class="panel">
+                    <h3>CETAK LAPORAN</h3>
+                    <div class="form-group"><label>Kelas</label><select id="printKelas" onchange="loadSiswaPrint()"></select></div>
+                    <div class="form-group"><label>Siswa</label><select id="printSiswa"></select></div>
+                    <div class="form-group"><label>Bulan</label><select id="printBulan">
+                        ${["Januari","Februari","Maret","April","Mei","Juni","Juli","Agustus","September","Oktober","November","Desember"].map(b => `<option>${b}</option>`).join('')}
+                    </select></div>
+                    <button class="btn-simpan" onclick="cetakLaporan()">CETAK LAPORAN</button>
+                </div>`;
+            loadKelasPrint();
+        }
+    }
+
+    // --- FUNGSI CORE ---
+
+    function showStatus() {
+        const st = document.getElementById("statusSave");
+        st.style.display = "block";
+        setTimeout(() => { st.style.display = "none"; }, 1000);
+    }
+
+    function simpanDataSekolah() {
+        const data = {
+            namaSekolah: document.getElementById("namaSekolah").value,
+            kabupaten: document.getElementById("kabupaten").value,
+            npsn: document.getElementById("npsn").value,
+            alamat: document.getElementById("alamat").value,
+            kepalaSekolah: document.getElementById("kepalaSekolah").value,
+            nipKepala: document.getElementById("nipKepala").value
+        };
+        localStorage.setItem("dataSekolah", JSON.stringify(data));
+        showStatus();
+    }
+
+    function loadDataSekolah() {
+        const data = JSON.parse(localStorage.getItem("dataSekolah"));
+        if (data) {
+            document.getElementById("namaSekolah").value = data.namaSekolah || "";
+             if(document.getElementById("kabupaten")) 
+            document.getElementById("kabupaten").value = data.kabupaten || "";                        document.getElementById("npsn").value = data.npsn || "";
+            document.getElementById("alamat").value = data.alamat || "";
+            document.getElementById("kepalaSekolah").value = data.kepalaSekolah || "";
+            document.getElementById("nipKepala").value = data.nipKepala || "";
+        }
+    }
+
+    function simpanSiswa() {
+        const nama = document.getElementById("namaSiswa").value;
+        const nisn = document.getElementById("nisn").value;
+        const kelas = document.getElementById("kelas").value;
+        if(nama && kelas) {
+            dataSiswa.push({ nama, nisn, kelas });
+            localStorage.setItem("dataSiswa", JSON.stringify(dataSiswa));
+            tampilkanSiswa();
+            document.getElementById("namaSiswa").value = "";
+            document.getElementById("nisn").value = "";
+            alert("Siswa Ditambahkan!");
+        }
+    }
+
+    function tampilkanSiswa() {
+        const tbody = document.getElementById("tabelSiswaBody");
+        if(!tbody) return;
+        tbody.innerHTML = "";
+        dataSiswa.forEach((s, i) => {
+            tbody.innerHTML += `<tr><td>${i+1}</td><td>${s.nama}</td><td>${s.nisn}</td><td>${s.kelas}</td>
+            <td><button onclick="hapusSiswa(${i})" style="color:red; cursor:pointer; border:none; background:none;">[Hapus]</button></td></tr>`;
+        });
+    }
+
+    function hapusSiswa(i) {
+        if(confirm("Hapus siswa ini?")) {
+            dataSiswa.splice(i, 1);
+            localStorage.setItem("dataSiswa", JSON.stringify(dataSiswa));
+            tampilkanSiswa();
+        }
+    }
+
+    function prosesImportExcel() {
+        const fileInput = document.getElementById('inputExcel');
+        if(!fileInput.files[0]) return alert("Pilih file!");
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const workbook = XLSX.read(e.target.result, { type: 'binary' });
+            const sheet = workbook.Sheets[workbook.SheetNames[0]];
+            const json = XLSX.utils.sheet_to_json(sheet, {header: "A"});
+            for(let i=6; i<json.length; i++) {
+                if(json[i].B) {
+                    dataSiswa.push({ nama: json[i].B, nisn: json[i].E || "", kelas: json[i].AQ || "X" });
+                }
+            }
+            localStorage.setItem("dataSiswa", JSON.stringify(dataSiswa));
+            tampilkanSiswa();
+            alert("Berhasil!");
+        };
+        reader.readAsBinaryString(fileInput.files[0]);
+    }
+
+    function autosaveKaih() {
+        const siswa = document.getElementById("namaSiswaKaih").value;
+        const tanggal = document.getElementById("tanggal").value;
+        if (!siswa || !tanggal) return;
+        const indexLama = dataKaih.findIndex(d => d.siswa === siswa && d.tanggal === tanggal);
+        const d = {
+            wali: document.getElementById("waliKelas").value,
+            nip: document.getElementById("nipWali").value,
+            kelas: document.getElementById("kelasKaih").value,
+            siswa: siswa,
+            bulan: document.getElementById("bulan").value,
+            tanggal: tanggal,
+            bangunPagi: document.getElementById("bangunPagi").value,
+            beribadah: document.getElementById("beribadah").value,
+            olahraga: document.getElementById("olahraga").value,
+            makanSehat: document.getElementById("makanSehat").value,
+            belajar: document.getElementById("belajar").value,
+            masyarakat: document.getElementById("masyarakat").value,
+            tidurCepat: document.getElementById("tidurCepat").value
+        };
+        if (indexLama !== -1) dataKaih[indexLama] = d;
+        else dataKaih.push(d);
+        localStorage.setItem("dataKaih", JSON.stringify(dataKaih));
+        showStatus();
+    }
+
+    function filterRekap() {
+        const bln = document.getElementById("filterBulanRekap").value;
+        const tbody = document.getElementById("tabelRekapBody");
+        if(!tbody) return;
+        tbody.innerHTML = "";
+        dataKaih.filter(d => !bln || d.bulan === bln).forEach((d, i) => {
+            tbody.innerHTML += `<tr>
+                <td>${d.tanggal}</td><td>${d.siswa}</td><td>${d.kelas}</td>
+                <td>${d.bangunPagi}</td><td>${d.beribadah}</td><td>${d.olahraga}</td>
+                <td>${d.makanSehat}</td><td>${d.belajar}</td><td>${d.masyarakat}</td><td>${d.tidurCepat}</td>
+                <td><button onclick="hapusRekap(${i})" style="color:red; border:none; background:none; cursor:pointer;">[X]</button></td>
+            </tr>`;
+        });
+    }
+
+    function hapusRekap(i) {
+        if(confirm("Hapus baris ini?")) {
+            dataKaih.splice(i, 1);
+            localStorage.setItem("dataKaih", JSON.stringify(dataKaih));
+            filterRekap();
+        }
+    }
+
+    function eksporExcelRekap() {
+        const bln = document.getElementById("filterBulanRekap").value || "Semua_Bulan";
+        const table = document.getElementById("tabelRekapFull");
+        const wb = XLSX.utils.table_to_book(table, {sheet: "Rekap"});
+        XLSX.writeFile(wb, `Rekap_7KAIH_${bln}.xlsx`);
+    }
+
+    // --- PENDUKUNG ---
+    function loadKelasKaih() {
+        const sel = document.getElementById("kelasKaih");
+        const kelas = [...new Set(dataSiswa.map(s => s.kelas))];
+        sel.innerHTML = `<option value="">Pilih Kelas</option>` + kelas.map(k => `<option>${k}</option>`).join('');
+    }
+    function loadSiswaByKelas() {
+        const k = document.getElementById("kelasKaih").value;
+        const sel = document.getElementById("namaSiswaKaih");
+        sel.innerHTML = `<option value="">Pilih Siswa</option>` + dataSiswa.filter(s => s.kelas === k).map(s => `<option>${s.nama}</option>`).join('');
+    }
+    function loadKelasPrint() {
+        const sel = document.getElementById("printKelas");
+        const kelas = [...new Set(dataSiswa.map(s => s.kelas))];
+        sel.innerHTML = `<option value="">Pilih Kelas</option>` + kelas.map(k => `<option>${k}</option>`).join('');
+    }
+    function loadSiswaPrint() {
+        const k = document.getElementById("printKelas").value;
+        const sel = document.getElementById("printSiswa");
+        sel.innerHTML = dataSiswa.filter(s => s.kelas === k).map(s => `<option>${s.nama}</option>`).join('');
+    }
+    function hitungStatus(dataArr, field) {
+        if(dataArr.length === 0) return "Data Kosong";
+        const ya = dataArr.filter(d => (field === 'bangunPagi' || field === 'tidurCepat') ? (d[field] !== "" && d[field] !== null) : d[field] === "Ya").length;
+        return (ya / dataArr.length * 100) >= 75 ? "Sudah Terbiasa" : "Belum Terbiasa";
+    }
+
+function cetakLaporan() {
+    // 1. Ambil data input dari form cetak
+    const k = document.getElementById("printKelas").value;
+    const s = document.getElementById("printSiswa").value;
+    const b = document.getElementById("printBulan").value;
+
+    // 2. Ambil data dari LocalStorage
+    const sekolah = JSON.parse(localStorage.getItem("dataSekolah")) || {};
+    const logo = localStorage.getItem("logoSekolah") || "";
+    
+    // 3. Filter data aktivitas berdasarkan Siswa, Bulan, dan Kelas
+    const dataIndividu = dataKaih.filter(d => d.siswa === s && d.bulan === b && d.kelas === k);
+
+    // 4. Cek jika data kosong
+    if (dataIndividu.length === 0) {
+        return alert("Data aktivitas siswa " + s + " untuk bulan " + b + " tidak ditemukan!");
+    }
+
+    // 5. Ambil Nama Wali dan NIP dari data yang ada
+    const wali = dataIndividu[0].wali || "-";
+    const nipWali = dataIndividu[0].nip || "-";
+
+    // 6. Buka jendela cetak baru
+    const win = window.open("", "_blank");
+    win.document.write(`
+        <html>
+        <head>
+            <title>Laporan 7 KAIH - ${s}</title>
+            <style>
+                body { font-family: Arial, sans-serif; padding: 30px; line-height: 1.5; color: #333; }
+                
+                /* Kop Surat */
+                .header-container { display: flex; align-items: center; border-bottom: 3px double #000; padding-bottom: 10px; margin-bottom: 20px; }
+                .logo-img { width: 80px; height: 80px; object-fit: contain; margin-right: 20px; }
+                .sekolah-info { flex-grow: 1; text-align: center; }
+                .sekolah-info h2 { margin: 0; font-size: 20px; text-transform: uppercase; }
+                .sekolah-info p { margin: 2px 0; font-size: 12px; }
+
+                /* Judul Laporan */
+                .judul { text-align: center; text-decoration: underline; margin-bottom: 20px; }
+                
+                /* Identitas Siswa Berurutan ke Bawah */
+                .identitas { margin-bottom: 20px; font-size: 14px; }
+                .identitas table { border: none !important; width: auto; }
+                .identitas td { border: none !important; padding: 2px 5px 2px 0; }
+
+                /* Tabel Utama */
+                table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+                th, td { border: 1px solid black; padding: 10px; text-align: left; font-size: 13px; }
+                th { background-color: #f2f2f2; text-align: center; }
+                .text-center { text-align: center; }
+
+                /* Tanda Tangan */
+                .footer { margin-top: 40px; display: flex; justify-content: space-between; text-align: center; font-size: 14px; }
+                .footer-box { width: 250px; }
+            </style>
+        </head>
+        <body>
+            <div class="header-container">
+                ${logo ? `<img src="${logo}" class="logo-img">` : ''}
+                <div class="sekolah-info">
+
+                   <p style="margin:0; font-weight:bold; text-transform:uppercase; font-size:14px;">
+            DINAS PENDIDIKAN KABUPATEN ${(sekolah.kabupaten || 'KABUPATEN').toUpperCase()}
+        </p>
+        <h2 style="margin:2px 0; font-size:18px; text-transform:uppercase;">
+            ${sekolah.namaSekolah || 'NAMA SEKOLAH'}
+        </h2>
+        <p style="margin:0; font-size:11px;">
+            NPSN: ${sekolah.npsn || '-'} | Alamat: ${sekolah.alamat || '-'}
+        </p>                
+            </div>
+            </div>
+
+            <h3 class="judul">LAPORAN PEMBIASAAN 7 KAIH</h3>
+
+            <div class="identitas">
+                <table>
+                    <tr><td>Nama Siswa</td><td>:</td><td><b>${s}</b></td></tr>
+                    <tr><td>Kelas</td><td>:</td><td><b>${k}</b></td></tr>
+                    <tr><td>Bulan</td><td>:</td><td><b>${b}</b></td></tr>
+                </table>
+            </div>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th width="40px">No</th>
+                        <th>Pembiasaan 7 KAIH</th>
+                        <th>Hasil Pemantauan</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td class="text-center">1</td><td>Bangun Pagi</td><td><b>${hitungStatus(dataIndividu, 'bangunPagi')}</b></td></tr>
+                    <tr><td class="text-center">2</td><td>Beribadah</td><td><b>${hitungStatus(dataIndividu, 'beribadah')}</b></td></tr>
+                    <tr><td class="text-center">3</td><td>Berolahraga</td><td><b>${hitungStatus(dataIndividu, 'olahraga')}</b></td></tr>
+                    <tr><td class="text-center">4</td><td>Makan Sehat & Bergizi</td><td><b>${hitungStatus(dataIndividu, 'makanSehat')}</b></td></tr>
+                    <tr><td class="text-center">5</td><td>Gemar Belajar</td><td><b>${hitungStatus(dataIndividu, 'belajar')}</b></td></tr>
+                    <tr><td class="text-center">6</td><td>Bermasyarakat</td><td><b>${hitungStatus(dataIndividu, 'masyarakat')}</b></td></tr>
+                    <tr><td class="text-center">7</td><td>Tidur Cepat</td><td><b>${hitungStatus(dataIndividu, 'tidurCepat')}</b></td></tr>
+                </tbody>
+            </table>
+
+            <div class="footer">
+                <div class="footer-box">
+                    Mengetahui,<br>Orang Tua/Wali Siswa<br><br><br><br><br>
+                    ( ____________________ )
+                </div>
+                <div class="footer-box">
+                    ${sekolah.kabupaten || 'Kabupaten'}, ${new Date().toLocaleDateString('id-ID')}<br>
+    Wali Kelas<br><br><br><br>
+    <b>${wali}</b><br>
+    NIP. ${nipWali}
+                </div>
+            </div>
+
+            <script>
+                // Pastikan gambar logo terload sebelum print
+                window.onload = function() {
+                    window.print();
+                    // window.close(); // Aktifkan jika ingin tab otomatis tertutup setelah print
+                };
+            <\/script>
+        </body>
+        </html>
+    `);
+    win.document.close();
+}    
+
+    function uploadLogo(input) {
+        if (input.files && input.files[0]) {
+            const reader = new FileReader();
+            reader.onload = e => {
+                document.getElementById("logoPreview").src = e.target.result;
+                localStorage.setItem("logoSekolah", e.target.result);
+            };
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+    function resetAll() { if(confirm("Reset semua?")) { localStorage.clear(); location.reload(); } }
+    window.onload = () => {
+        const logo = localStorage.getItem("logoSekolah");
+        if(logo) document.getElementById("logoPreview").src = logo;
+        showPage('sekolah');
+    };
+</script>
+</body>
+</html>
